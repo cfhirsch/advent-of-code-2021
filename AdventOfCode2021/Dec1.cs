@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-
 namespace AdventOfCode2021
 {
+    using System.Linq;
+
     public static class Dec1
     {
         public static void Solve_Part_One()
@@ -22,6 +22,28 @@ namespace AdventOfCode2021
             }
 
             Console.WriteLine("{0} increases.", numIncrease);
+        }
+
+        public static void Solve_Part_Two()
+        {
+            List<int> readings =
+                PuzzleInputReader.GetPuzzleLines(@"c:\docs\adventofcode2021\dec1.txt")
+                    .Select(s => Int32.Parse(s)).ToList();
+            int numIncreases = 0;
+
+            int previous = Int32.MaxValue;
+            for (int i = 0; i < readings.Count - 2; i++)
+            {
+                int current = readings[i] + readings[i + 1] + readings[i + 2];
+                if (current > previous)
+                {
+                    numIncreases++;
+                }
+
+                previous = current;
+            }
+
+            Console.WriteLine("Num increases = {0}.", numIncreases);
         }
     }
 }

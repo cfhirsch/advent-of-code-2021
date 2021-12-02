@@ -34,6 +34,37 @@ namespace AdventOfCode2021
                 Console.WriteLine("x = {0}, y = {1}, x * y = {2}", x, y, x * y);
             }
         }
+
+        public static void Solve_Part_Two()
+        {
+            long x = 0;
+            long y = 0;
+            long aim = 0;
+            foreach (string line in PuzzleInputReader.GetPuzzleLines(@"c:\docs\adventofcode2021\dec2.txt"))
+            {
+                var command = new Command(line);
+                switch (command.Direction)
+                {
+                    case Direction.Down:
+                        aim += command.Distance;
+                        break;
+
+                    case Direction.Forward:
+                        x += command.Distance;
+                        y += aim * command.Distance;
+                        break;
+
+                    case Direction.Up:
+                        aim -= command.Distance;
+                        break;
+
+                    default:
+                        throw new ArgumentException($"Unknown direction {command.Direction}.");
+                }
+
+                Console.WriteLine("x = {0}, y = {1}, aim = {2}, x * y = {3}", x, y, aim, x * y);
+            }
+        }
     }
 
     public struct Command

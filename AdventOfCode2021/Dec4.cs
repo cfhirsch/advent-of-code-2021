@@ -78,6 +78,72 @@ namespace AdventOfCode2021
             int unmarkedSum = winningBoard.GetUnmarkedSum();
             Console.WriteLine("sum = {0}, lastNum = {1}, score = {2}", lastNumber, unmarkedSum, lastNumber * unmarkedSum);
         }
+
+        public static void Solve_Part_Two()
+        {
+            // Read in numbers.
+            var lines = PuzzleInputReader.GetPuzzleLines(@"c:\docs\adventofcode2021\dec4.txt");
+
+            IEnumerable<int> numbers = lines.First().Split(",").Select(s => Int32.Parse(s));
+
+            // Load bingo boards.
+            var boards = new List<BingoBoard>();
+            int row = 0;
+            var squares = new BoardSquare[5, 5];
+            foreach (string line in lines.Skip(2))
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                string[] entries = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                for (int col = 0; col < 5; col++)
+                {
+                    squares[row, col] = new BoardSquare(Int32.Parse(entries[col]));
+                }
+
+                row++;
+                if (row >= 5)
+                {
+                    row = 0;
+                    boards.Add(new BingoBoard(squares));
+                    squares = new BoardSquare[5, 5];
+                }
+            }
+
+            // Now play the game.
+            int lastNumber = Int32.MinValue;
+            int numWinningBoards = 0;
+            BingoBoard lastWinningBoard = null;
+            foreach (int number in numbers)
+            {
+                Console.WriteLine("Calling {0}.", number);
+                foreach (BingoBoard board in boards)
+                {
+                    board.NextNumber(number);
+                    if (!board.Winner && board.IsWinner())
+                    {
+                        lastNumber = number;
+                        numWinningBoards++;
+                        if (numWinningBoards == boards.Count())
+                        {
+                            lastWinningBoard = board;
+                            break;
+                        }
+                    }
+                }
+
+                if (lastWinningBoard != null)
+                {
+                    break;
+                }
+            }
+
+            // Calculate score.
+            int unmarkedSum = lastWinningBoard.GetUnmarkedSum();
+            Console.WriteLine("sum = {0}, lastNum = {1}, score = {2}", lastNumber, unmarkedSum, lastNumber * unmarkedSum);
+        }
     }
 
     public class BingoBoard
@@ -88,6 +154,8 @@ namespace AdventOfCode2021
         }
 
         public BoardSquare[,] Board { get; }
+
+        public bool Winner { get; private set; }
 
         public int GetUnmarkedSum()
         {
@@ -137,6 +205,7 @@ namespace AdventOfCode2021
 
                 if (win)
                 {
+                    this.Winner = true;
                     return true;
                 }
             }
@@ -156,6 +225,7 @@ namespace AdventOfCode2021
 
                 if (win)
                 {
+                    this.Winner = true;
                     return true;
                 }
             }

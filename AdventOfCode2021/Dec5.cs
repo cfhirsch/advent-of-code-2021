@@ -10,72 +10,15 @@ namespace AdventOfCode2021
     {
         public static void Solve_Part_One(bool show = false)
         {
-            List<Line> lines = PuzzleInputReader.GetPuzzleLines(@"c:\docs\adventofcode2021\dec5.txt")
-                                    .Select(l => new Line(l))
-                                    .Where(l => (l.IsHorizontal() || l.IsVertical()))
-                                    .ToList();
-
-            int bottomX = lines.Select(l => l.Begin.X).Max();
-            int temp = lines.Select(l => l.End.X).Max();
-            if (temp > bottomX)
-            {
-                bottomX = temp;
-            }
-
-            int bottomY = lines.Select(l => l.Begin.Y).Max();
-            temp = lines.Select(l => l.End.Y).Max();
-            if (temp > bottomY)
-            {
-                bottomY = temp;
-            }
-
-            var grid = new int[bottomY + 1, bottomX + 1];
-            foreach (Line line in lines)
-            {
-                if (line.IsHorizontal())
-                {
-                    int minX = Math.Min(line.Begin.X, line.End.X);
-                    int maxX = Math.Max(line.Begin.X, line.End.X);
-                    for (int x = minX; x <= maxX; x++)
-                    {
-                        grid[line.Begin.Y, x]++;
-                    }
-                }
-                else
-                {
-                    int minY = Math.Min(line.Begin.Y, line.End.Y);
-                    int maxY = Math.Max(line.Begin.Y, line.End.Y);
-                    for (int y = minY; y <= maxY; y++)
-                    {
-                        grid[y, line.Begin.X]++;
-                    }
-                }
-            }
-
-            int numDangerous = 0;
-            for (int y = 0; y < grid.GetLength(0); y++)
-            {
-                for (int x = 0; x < grid.GetLength(1); x++)
-                {
-                    if (grid[y, x] >= 2)
-                    {
-                        numDangerous++;
-                    }
-
-                    if (show)
-                    {
-                        string output = grid[y, x] > 0 ? grid[y, x].ToString() : ".";
-                        Console.Write(output);
-                    }
-                }
-
-                Console.WriteLine();
-            }
-
-            Console.WriteLine("Num dangerous = {0}.", numDangerous);
+            Solve(useDiagonalLines: false, show);
         }
 
         public static void Solve_Part_Two(bool show = false)
+        {
+            Solve(useDiagonalLines: true, show);
+        }
+
+        public static void Solve(bool useDiagonalLines, bool show = false)
         {
             List<Line> lines = PuzzleInputReader.GetPuzzleLines(@"c:\docs\adventofcode2021\dec5.txt")
                                     .Select(l => new Line(l))
@@ -116,7 +59,7 @@ namespace AdventOfCode2021
                         grid[y, line.Begin.X]++;
                     }
                 }
-                else
+                else if (useDiagonalLines)
                 {
                     int xDir = (line.Begin.X > line.End.X) ? -1 : 1;
                     int yDir = (line.Begin.Y > line.End.Y) ? -1 : 1;
@@ -151,7 +94,10 @@ namespace AdventOfCode2021
                     }
                 }
 
-                Console.WriteLine();
+                if (show)
+                {
+                    Console.WriteLine();
+                }
             }
 
             Console.WriteLine("Num dangerous = {0}.", numDangerous);

@@ -42,7 +42,6 @@ namespace AdventOfCode2021
                     {
                         AddKey(newFishDict, 6, kvp.Value);
                         AddKey(newFishDict, 8, kvp.Value);
-
                     }
                     else
                     {

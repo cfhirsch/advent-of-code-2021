@@ -20,6 +20,38 @@ namespace AdventOfCode2021
             Console.WriteLine("Median = {0}, Cost = {1}", median, cost);
         }
 
+        public static void Solve_Part_Two()
+        {
+            List<int> positions = PuzzleInputReader.GetPuzzleLines(@"c:\docs\adventofcode2021\dec7.txt")
+                                    .First()
+                                    .Split(",", StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(s => Int32.Parse(s))
+                                    .ToList();
+
+            int min = positions.Min();
+            int max = positions.Max();
+
+            int minPos = Int32.MinValue;
+            long minFuel = Int32.MaxValue;
+            for (int i = min; i <= max; i++)
+            {
+                long fuel = positions.Select(s => Distance(s, i)).Sum();
+                if (fuel < minFuel)
+                {
+                    minFuel = fuel;
+                    minPos = i;
+                }
+            }
+
+            Console.WriteLine("MinPos = {0}, MinFuel = {1}", minPos, minFuel);
+        }
+
+        private static int Distance(int x, int y)
+        {
+            int diff = Math.Abs(x - y);
+            return (diff * (diff + 1)) / 2;
+        }
+
         // Following code to calculate Median taken from https://stackoverflow.com/questions/4140719/calculate-median-in-c-sharp.
         /// <summary>
         /// Partitions the given list around a pivot element such that all elements on left of pivot are <= pivot

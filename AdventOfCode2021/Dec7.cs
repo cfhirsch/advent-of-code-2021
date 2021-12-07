@@ -49,6 +49,8 @@ namespace AdventOfCode2021
         private static int Distance(int x, int y)
         {
             int diff = Math.Abs(x - y);
+
+            // Using Gauss's formula; the distance is the sum 1 + 2 + ... + |x - y|
             return (diff * (diff + 1)) / 2;
         }
 

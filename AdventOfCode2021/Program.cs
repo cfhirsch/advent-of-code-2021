@@ -6,8 +6,7 @@ namespace AdventOfCode2021
     {
         static void Main(string[] args)
         {
-            Dec7.Solve_Part_One();
-            Dec7.Solve_Part_Two();
+            Dec8.Solve_Part_One();
         }
     }
 }

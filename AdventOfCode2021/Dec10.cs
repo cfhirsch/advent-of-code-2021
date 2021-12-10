@@ -1,43 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace AdventOfCode2021
 {
     public static class Dec10
     {
-        public static void Solve_Part_One()
-        {
-            long score = 0;
-            foreach (string line in PuzzleInputReader.GetPuzzleLines(@"c:\docs\adventofcode2021\dec10.txt"))
-            {
-                var stack = new Stack<char>();
-                foreach(char ch in line)
-                {
-                    if (IsChunkBegin(ch))
-                    {
-                        stack.Push(ch);
-                    }
-                    else
-                    {
-                        char endCh = stack.Pop();
-                        char expectedCh = GetExpectedEndChar(endCh);
-                        if (expectedCh != ch)
-                        {
-                            Console.WriteLine("Expected {0}, but found {1} instead.", expectedCh, ch);
-                            score += GetScore(ch);
-                            continue;
-                        }
-                    }
-                }
-            }
-
-            Console.WriteLine("Total score = {0}.", score);
-        }
-
-        public static void Solve_Part_Two(bool show = false)
+        public static void Solve(bool show = false)
         {
             var completionScores = new List<long>();
+            long curruptScore = 0;
+
             foreach (string line in PuzzleInputReader.GetPuzzleLines(@"c:\docs\adventofcode2021\dec10.txt"))
             {
                 if (show)
@@ -64,6 +36,7 @@ namespace AdventOfCode2021
                                 Console.WriteLine("Expected {0}, but found {1} instead.", expectedCh, ch);
                             }
 
+                            curruptScore += GetScore(ch);
                             correct = false;
                             break;
                         }
@@ -98,8 +71,12 @@ namespace AdventOfCode2021
             completionScores.Sort();
 
             int index = completionScores.Count / 2;
-            Console.WriteLine("{0} scores, middle score will be at {1}.", completionScores.Count, index);
+            if (show)
+            {
+                Console.WriteLine("{0} scores, middle score will be at {1}.", completionScores.Count, index);
+            }
 
+            Console.WriteLine("Currupt score = {0}.", curruptScore);
             Console.WriteLine("Score = {0}.", completionScores[index]);
         }
 

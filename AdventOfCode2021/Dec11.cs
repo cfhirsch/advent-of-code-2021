@@ -8,7 +8,7 @@ namespace AdventOfCode2021
 {
     public static class Dec11
     {
-        public static void Solve_Part_One(bool show = false)
+        public static void Solve(bool show = false, bool partTwo = false)
         {
             // Load in the grid.
             List<string> lines = PuzzleInputReader.GetPuzzleLines(@"c:\docs\adventofcode2021\dec11.txt").ToList();
@@ -33,7 +33,8 @@ namespace AdventOfCode2021
                 Console.WriteLine();
             }
 
-            while (step < maxStep)
+            int firstSynchronize = Int32.MinValue;
+            while ((!partTwo && step < maxStep) || (firstSynchronize < 0))
             {
                 step++;
                 var flashGrid = new bool[grid.GetLength(0), grid.GetLength(1)];
@@ -103,9 +104,39 @@ namespace AdventOfCode2021
                     PrintGrid(grid);
                     Console.WriteLine();
                 }
+
+                bool allZeros = true;
+                for (int i = 0; i < grid.GetLength(0); i++)
+                {
+                    for (int j = 0; j < grid.GetLength(1); j++)
+                    {
+                        if (grid[i, j] != 0)
+                        {
+                            allZeros = false;
+                            break;
+                        }
+                    }
+
+                    if (!allZeros)
+                    {
+                        break;
+                    }
+                }
+
+                if (allZeros)
+                {
+                    firstSynchronize = step;
+                }
             }
 
-            Console.WriteLine("Num flashes = {0}.", numFlashes);
+            if (!partTwo)
+            {
+                Console.WriteLine("Num flashes = {0}.", numFlashes);
+            }
+            else
+            {
+                Console.WriteLine("Octopuses first sychronize at step {0}.", firstSynchronize);
+            }
         }
 
         private static IEnumerable<Point> GetNeighbors(int x, int y, int maxX, int maxY)

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace AdventOfCode2021
 {
     public static class Dec12
     {
-        public static void Solve_Part_One()
+        public static void Solve(bool show = false, bool partTwo = false)
         {
             // Build the map.
             var map = new Dictionary<string, HashSet<string>>();
@@ -28,19 +27,23 @@ namespace AdventOfCode2021
                 foreach (string neighbor in map[current])
                 {
                     // A path visits lower case caves at most once.
-                    if (IsLowerCase(neighbor) && path.Contains(neighbor))
+                    if (FilterNeighbor(path, neighbor, partTwo))
                     {
                         continue;
                     }
 
                     if (neighbor == "end")
                     {
-                        foreach(string node in path)
+                        if (show)
                         {
-                            Console.Write("{0},", node);
+                            foreach (string node in path)
+                            {
+                                Console.Write("{0},", node);
+                            }
+
+                            Console.WriteLine("end");
                         }
 
-                        Console.WriteLine("end");
                         numPaths++;
                     }
                     else
@@ -64,6 +67,34 @@ namespace AdventOfCode2021
             }
 
             map[current].Add(neighbor);
+        }
+
+        private static bool FilterNeighbor(List<string> path, string neighbor, bool isPartTwo)
+        {
+            if (!isPartTwo)
+            {
+                return (IsLowerCase(neighbor) && path.Contains(neighbor));
+            }
+
+            if (neighbor == "start")
+            {
+                return true;
+            }
+
+            if (IsLowerCase(neighbor))
+            {
+                bool lowerCaseCaveVisitedTwice = path.Where(p => IsLowerCase(p))
+                        .GroupBy(p => p)
+                        .Select(p => new { Char = p.Key, Count = p.Count() })
+                        .Any(p => p.Count >= 2);
+
+                if (lowerCaseCaveVisitedTwice && path.Contains(neighbor))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static bool IsLowerCase(string str)

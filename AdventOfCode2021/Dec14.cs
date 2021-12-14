@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace AdventOfCode2021
 {
     public static class Dec14
     {
-        public static void Solve()
+        public static void Solve(int numIterations)
         {
             // Parse input.
             bool first = true;
@@ -33,46 +32,81 @@ namespace AdventOfCode2021
 
             Console.WriteLine("Template:\t{0}", polymer);
 
-            for (int i = 1; i <= 10; i++)
-            {
-                var sb = new StringBuilder();
+            // A dictionary to keep track of the count of adjacent pairs of characters in the polymer.
+            var pairDict = new Dictionary<string, long>();
 
-                // Apply rules.
-                for (int j = 0; j < polymer.Length - 1; j++)
+            // A dictionary to keep track of the count of characters in the polymer.
+            var charCountDict = new Dictionary<string, long>();
+
+            for (int i = 0; i < polymer.Length - 1; i++)
+            {
+                IncrementKey(pairDict, polymer.Substring(i, 2));
+            }
+
+            for (int i = 0; i < polymer.Length; i++)
+            {
+                IncrementKey(charCountDict, polymer[i].ToString());
+            }
+
+            for (int step = 1; step <= numIterations; step++)
+            {
+                var nextPairDict = pairDict.Select(k => k).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                var nextCharCountDict = charCountDict.Select(k => k).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                foreach (KeyValuePair<string, long> kvp in pairDict)
                 {
-                    string match = polymer.Substring(j, 2);
-                    Tuple<string, string> rule = productionRules.FirstOrDefault(p => p.Item1 == match);
+                    Tuple<string, string> rule = productionRules.FirstOrDefault(p => p.Item1 == kvp.Key);
                     if (rule != null)
                     {
-                        sb.AppendFormat("{0}{1}", match[0], rule.Item2);
-                    }
-                    else
-                    {
-                        sb.Append(match[0]);
+                        // For example, the rule CH -> B will
+                        // replace every instance of CH with CB and BH in terms of the pairs,
+                        // and add a B for every instance of CH in the original string.
+                        IncrementKey(nextPairDict, kvp.Key[0] + rule.Item2, kvp.Value);
+                        IncrementKey(nextPairDict, rule.Item2 + kvp.Key[1], kvp.Value);
+                        IncrementKey(nextPairDict, kvp.Key, -1 * kvp.Value);
+
+                        IncrementKey(nextCharCountDict, rule.Item2, kvp.Value);
                     }
                 }
 
-                sb.Append(polymer[polymer.Length - 1]);
+                pairDict = nextPairDict;
+                charCountDict = nextCharCountDict;
+            }
 
-                polymer = sb.ToString();
+            string minChar = null;
+            string maxChar = null;
+            long min = Int64.MaxValue;
+            long max = Int64.MinValue;
 
-                if (i <= 4)
+            foreach (KeyValuePair<string, long> kvp in charCountDict)
+            {
+                if (kvp.Value < min)
                 {
-                    Console.WriteLine("After step {0}: {1}", i, polymer);
+                    min = kvp.Value;
+                    minChar = kvp.Key;
+                }
+
+                if (kvp.Value > max)
+                {
+                    max = kvp.Value;
+                    maxChar = kvp.Key;
                 }
             }
 
-            IEnumerable<IGrouping<char, char>> groupings = polymer.GroupBy(s => s).OrderByDescending(s => s.Count());
-            
-            IGrouping<char, char> mostCommon = groupings.First();
-            int mostCommonCount = mostCommon.Count();
-            Console.WriteLine("Most common char is {0} which occurs {1} times.", mostCommon.Key, mostCommonCount);
+            Console.WriteLine("Most common char is {0} which occurs {1} times.", maxChar, max);
 
-            IGrouping<char, char> leastCommon = groupings.Last();
-            int leastCommonCount = leastCommon.Count();
-            Console.WriteLine("Least common char is {0} which occurs {1} times.", leastCommon.Key, leastCommonCount);
+            Console.WriteLine("Least common char is {0} which occurs {1} times.", minChar, min);
 
-            Console.WriteLine("Most common minus least common = {0}.", mostCommonCount - leastCommonCount);
+            Console.WriteLine("Most common minus least common = {0}.", max - min);
+        }
+
+        private static void IncrementKey<T>(Dictionary<T, long> dict, T key, long value = 1)
+        {
+            if (!dict.ContainsKey(key))
+            {
+                dict[key] = 0;
+            }
+
+            dict[key] += value;
         }
     }
 }

@@ -8,7 +8,7 @@ namespace AdventOfCode2021
 {
     public static class Dec13
     {
-        public static void Solve(bool show = false)
+        public static void Solve(bool show = false, bool partTwo = false)
         {
             var dots = new HashSet<Point>();
             bool loadingDots = true;
@@ -78,22 +78,26 @@ namespace AdventOfCode2021
                     PrintPaper(paper);
                 }
 
-                break;
-            }
-
-            int numDots = 0;
-            for (int y = 0; y < paper.GetLength(0); y++)
-            {
-                for (int x = 0; x < paper.GetLength(1); x++)
+                if (!partTwo)
                 {
-                    if (paper[y, x] == '#')
+                    int numDots = 0;
+                    for (int y = 0; y < paper.GetLength(0); y++)
                     {
-                        numDots++;
+                        for (int x = 0; x < paper.GetLength(1); x++)
+                        {
+                            if (paper[y, x] == '#')
+                            {
+                                numDots++;
+                            }
+                        }
                     }
+
+                    Console.WriteLine("There are {0} dots after the first fold.", numDots);
+                    break;
                 }
             }
 
-            Console.WriteLine("There are {0} dots after the first fold.", numDots);
+            PrintPaper(paper);
         }
 
         private static char[,] Fold(char[,] paper, int coord, FoldDirection dir)

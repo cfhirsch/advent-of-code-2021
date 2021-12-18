@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 
 namespace AdventOfCode2021
 {
@@ -31,31 +28,31 @@ namespace AdventOfCode2021
             int highest_init_x = 0, highest_init_y = 0;
 
             int highestY = 0;
-            
+
+            int numHits = 0;
+
             // Calculate minimal x velocity that ensures we will reach left hand side
             // of boundary square before x velocity reaches zero.
             int minInitV_x = (int)Math.Ceiling((-1 + Math.Sqrt(1 + 8 * minX)) / 2);
+            bool success;
+            int maxHeight;
 
-            for (int init_vel_x = minInitV_x ; init_vel_x <= maxX; init_vel_x++)
+            for (int init_vel_x = minInitV_x; init_vel_x <= maxX; init_vel_x++)
             {
                 int currentMaxHeight = 0;
                 int currentMaxY = 0;
 
-                for (int init_vel_y = 0; init_vel_y < Math.Abs(minY); init_vel_y++)
-                { 
+                for (int init_vel_y = minY; init_vel_y < Math.Abs(minY); init_vel_y++)
+                {
                     var init_v = new Point(init_vel_x, init_vel_y);
-                    Tuple<SimulationResult, int> result = Simulate(init_v, minX, minY, maxX, maxY);
-                    
-                    SimulationResult simulationResult = result.Item1;
+                    (success, maxHeight) = Simulate(init_v, minX, minY, maxX, maxY);
 
-                    //Console.SetCursorPosition(0, 0);
-                    //Console.WriteLine("init v_x = {0}, int v_y = {1}, result = {2}", init_vel_x, init_vel_y, simulationResult);
-
-                    if (simulationResult == SimulationResult.Bullseye)
+                    if (success)
                     {
-                        if (result.Item2 > currentMaxHeight)
+                        numHits++;
+                        if (maxHeight > currentMaxHeight)
                         {
-                            currentMaxHeight = result.Item2;
+                            currentMaxHeight = maxHeight;
                             currentMaxY = init_vel_y;
                         }
                     }
@@ -68,11 +65,12 @@ namespace AdventOfCode2021
                     highest_init_y = currentMaxY;
                 }
             }
-            
+
             Console.WriteLine("Highest Y = {0}, found at ({1}, {2}).", highestY, highest_init_x, highest_init_y);
+            Console.WriteLine("{0} hits.", numHits);
         }
 
-        private static Tuple<SimulationResult, int> Simulate(Point initV, int minX, int minY, int maxX, int maxY)
+        private static (bool, int) Simulate(Point initV, int minX, int minY, int maxX, int maxY)
         {
             // The probe's x,y position starts at 0,0.
             var current = new Point(0, 0);
@@ -109,12 +107,7 @@ namespace AdventOfCode2021
                 current = new Point(newX, newY);
                 currentV = new Point(newVelX, newVelY);
 
-                //Console.WriteLine("Probe at {0}, {1}", current.X, current.Y);
-                //Console.WriteLine("Velocity = {0}, {1}", currentV.X, currentV.Y);
-
-                //Thread.Sleep(100);
-
-                if (current.Y  > highestY)
+                if (current.Y > highestY)
                 {
                     highestY = current.Y;
                 }
@@ -122,35 +115,16 @@ namespace AdventOfCode2021
                 // If we are in the bounding box, we have succeeded.
                 if (current.X >= minX && current.X <= maxX && current.Y >= minY && current.Y <= maxY)
                 {
-                    return new Tuple<SimulationResult, int>(SimulationResult.Bullseye, highestY);
+                    return (true, highestY);
                 }
 
                 // If we are past maxX, then we overshot.
-                if (current.X > maxX)
-                {
-                    return new Tuple<SimulationResult, int>(SimulationResult.Overshot, highestY);
-                }
-
                 // If we have fallen below minY, we have either undershot or passed through.
-                if (current.Y < minY)
+                if (current.X > maxX || current.Y < minY)
                 {
-                    if (current.X < minX)
-                    {
-                        return new Tuple<SimulationResult, int>(SimulationResult.Undershot, highestY);
-                    }
-
-                    return new Tuple<SimulationResult, int>(SimulationResult.PassedThrough, highestY);
+                    return (false, highestY);
                 }
             }
         }
-    }
-
-    public enum SimulationResult
-    {
-        None,
-        Overshot,
-        Undershot,
-        PassedThrough,
-        Bullseye
     }
 }

@@ -24,6 +24,8 @@ namespace AdventOfCode2021
                     Console.WriteLine("Sum = {0}", sum);
                 }
             }
+
+            Console.WriteLine("Result = {0}.", sum.Evaluate());
         }
     }
 
@@ -105,6 +107,32 @@ namespace AdventOfCode2021
 
         public int RightValue { get; set; }
 
+        public long Evaluate()
+        {
+            //The magnitude of a pair is 3 times the magnitude of its left element plus 2 times the magnitude
+            // of its right element. The magnitude of a regular number is just that number.
+            long result = 0;
+            if (this.Left == null)
+            {
+                result += (3 * this.LeftValue);
+            }
+            else
+            {
+                result += 3 * this.Left.Evaluate();
+            }
+
+            if (this.Right == null)
+            {
+                result += (2 * this.RightValue);
+            }
+            else
+            {
+                result += 2 * this.Right.Evaluate();
+            }
+
+            return result;
+        }
+
         public static SnailFishNumber operator+ (SnailFishNumber x, SnailFishNumber y)
         {
             // To add two snailfish numbers, form a pair from the left and right parameters of the addition operator.
@@ -124,7 +152,7 @@ namespace AdventOfCode2021
 
                 if (exploded)
                 {
-                    Console.WriteLine("Exploded: {0}", z);
+                    //Console.WriteLine("Exploded: {0}", z);
                 }
 
                 if (!exploded)
@@ -133,7 +161,7 @@ namespace AdventOfCode2021
                     split = Split(z);
                     if (split)
                     {
-                        Console.WriteLine("Split: {0}", z);
+                        //Console.WriteLine("Split: {0}", z);
                     }
                 }
             } while (exploded || split);

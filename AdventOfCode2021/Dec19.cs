@@ -2,29 +2,105 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 
 namespace AdventOfCode2021
 {
+    /// <summary>
+    /// This one stumped me, so I adopted this solution from C++ into C#:
+    /// https://itnext.io/modern-c-in-advent-of-code-day19-ff9525afb2ee
+    /// </summary>
     public static class Dec19
     {
-        static Dec19()
+        public static void Solve()
         {
-            
+            var scanners = new List<Scanner>();
+            var points = new HashSet<Point3D>();
+            foreach (string line in PuzzleInputReader.GetPuzzleLines(@"c:\docs\adventofcode2021\dec19.txt"))
+            {
+                if (line.StartsWith("---"))
+                {
+                    points = new HashSet<Point3D>();
+                }
+                else if (string.IsNullOrEmpty(line))
+                {
+                    var scanner = new Scanner(points);
+                    scanners.Add(scanner);
+                }
+                else
+                {
+                    int[] coords = line.Split(",", StringSplitOptions.RemoveEmptyEntries)
+                                       .Select(l => Int32.Parse(l)).ToArray();
+                    points.Add(new Point3D(coords[0], coords[1], coords[2]));
+                }
+            }
+
+            scanners.Add(new Scanner(points));
+
+            NormalizeScanners(scanners, 12);
+
+            var uniqueBeacons = new HashSet<Point3D>();
+            foreach (Scanner scanner in scanners)
+            {
+                foreach (Point3D beacon in scanner.Beacons)
+                {
+                    uniqueBeacons.Add(beacon);
+                }
+            }
+
+            Console.WriteLine("Detected {0} unique beacons.", uniqueBeacons.Count);
+
+            int best = Int32.MinValue;
+            foreach (Scanner lhs in scanners)
+            {
+                foreach (Scanner rhs in scanners)
+                {
+                    best = Math.Max(best, (lhs.Position - rhs.Position).Manhattan());
+                }
+            }
+
+            Console.WriteLine("The greatest distance between two scanners is {0}.", best);
+        }
+
+        private static void NormalizeScanners(List<Scanner> scanners, int threshold)
+        {
+            var fixedSet = new HashSet<int>();
+
+            var queue = new Deque<int>();
+            fixedSet.Add(0);
+
+            queue.PushBack(0);
+            scanners[0].Position = new Point3D(0, 0, 0);
+
+            while (!queue.Empty)
+            {
+                int tested = queue.PopFront();
+
+                for (int other = 0; other < scanners.Count; other++)
+                {
+                    if (fixedSet.Contains(other))
+                    {
+                        continue;
+                    }
+
+                    ScannerOrientation? result = scanners[tested].Overlaps(scanners[other], threshold);
+
+                    if (!result.HasValue)
+                    {
+                        continue;
+                    }
+
+                    scanners[other].Normalize(result.Value);
+
+                    queue.PushBack(other);
+                    fixedSet.Add(other);
+                }
+            }
         }
     }
 
     public class Point3D : IEquatable<Point3D>
     {
-        private const int XAxis = 0;
-        private const int YAxis = 1;
-        private const int ZAxis = 2;
-        private const int POS = 1;
-        private const int NEG = -1;
-
         private int[] values;
-
-        private static int[] test = { 1, 2, 3 };
 
         public Point3D(int x, int y, int z)
         {
@@ -56,6 +132,11 @@ namespace AdventOfCode2021
             return this.X.GetHashCode() ^ this.Y.GetHashCode() ^ this.Z.GetHashCode();
         }
 
+        public int Manhattan()
+        {
+            return Math.Abs(this.X) + Math.Abs(this.Y) + Math.Abs(this.Z);
+        }
+
         public Point3D Rotate(Rotation rotation)
         {
             return new Point3D(
@@ -69,12 +150,12 @@ namespace AdventOfCode2021
             return $"{this.X}, {this.Y}, {this.Z}";
         }
 
-        public static Point3D operator + (Point3D first, Point3D second)
+        public static Point3D operator +(Point3D first, Point3D second)
         {
             return new Point3D(first.X + second.X, first.Y + second.Y, first.Z + second.Z);
         }
 
-        public static Point3D operator - (Point3D first, Point3D second)
+        public static Point3D operator -(Point3D first, Point3D second)
         {
             return new Point3D(first.X - second.X, first.Y - second.Y, first.Z - second.Z);
         }
@@ -168,25 +249,31 @@ namespace AdventOfCode2021
             this.Beacons = beacons;
         }
 
-        public Point3D Position { get; private set; }
+        public Point3D Position { get; set; }
 
         public HashSet<Point3D> Beacons { get; private set; }
 
-        public ScannerOrientation? Overlaps(Scanner other, UInt64 threshold)
+        public ScannerOrientation? Overlaps(Scanner other, int threshold)
         {
             foreach (Rotation rotation in Rotations)
             {
-                var cnts = new Dictionary<Point3D, UInt64>();
+                var cnts = new Dictionary<Point3D, int>();
 
                 foreach (Point3D lhs in this.Beacons)
                 {
                     foreach (Point3D rhs in other.Beacons)
                     {
-                        cnts[lhs - rhs.Rotate(rotation)]++;
+                        Point3D key = lhs - rhs.Rotate(rotation);
+                        if (!cnts.ContainsKey(key))
+                        {
+                            cnts[key] = 0;
+                        }
+
+                        cnts[key]++;
                     }
                 }
 
-                foreach (KeyValuePair<Point3D, UInt64> kvp in cnts)
+                foreach (KeyValuePair<Point3D, int> kvp in cnts)
                 {
                     if (kvp.Value >= threshold)
                     {
@@ -198,7 +285,8 @@ namespace AdventOfCode2021
             return null;
         }
 
-        public void Normalize(ScannerOrientation orientation) {
+        public void Normalize(ScannerOrientation orientation)
+        {
             HashSet<Point3D> normalized = this.Beacons.
                 Select(b => b.Rotate(orientation.Rotation) + orientation.Position).ToHashSet();
 

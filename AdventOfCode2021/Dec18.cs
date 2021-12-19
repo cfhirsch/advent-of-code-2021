@@ -1,12 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace AdventOfCode2021
 {
     public static class Dec18
     {
-        public static void Solve(bool show = false)
+        public static void Solve(bool partTwo = false)
+        {
+            if (!partTwo)
+            {
+                SolvePartOne();
+            }
+            else
+            {
+                SolvePartTwo();
+            }
+        }
+
+        public static void SolvePartOne()
         {
             SnailFishNumber sum = null;
             foreach (string line in PuzzleInputReader.GetPuzzleLines(@"c:\docs\adventofcode2021\dec18.txt"))
@@ -26,6 +39,36 @@ namespace AdventOfCode2021
             }
 
             Console.WriteLine("Result = {0}.", sum.Evaluate());
+        }
+
+        public static void SolvePartTwo()
+        {
+            List<string> numbers = PuzzleInputReader.GetPuzzleLines(@"c:\docs\adventofcode2021\dec18.txt").ToList();
+
+            long maxSum = Int64.MinValue;
+            string max1 = null;
+            string max2 = null;
+            foreach (string num1Str in numbers)
+            {
+                foreach (string num2Str in numbers.Except(new[] { num1Str }))
+                {
+                    int pos = 0;
+                    var num1 = new SnailFishNumber(num1Str, ref pos);
+
+                    pos = 0;
+                    var num2 = new SnailFishNumber(num2Str, ref pos);
+                    SnailFishNumber result = num1 + num2;
+                    long val = result.Evaluate();
+                    if (val > maxSum)
+                    {
+                        maxSum = val;
+                        max1 = num1Str;
+                        max2 = num2Str;
+                    }
+                }
+            }
+
+            Console.WriteLine("Max sum = {0}, obtained by adding {1} and {2}.", maxSum, max1, max2);
         }
     }
 

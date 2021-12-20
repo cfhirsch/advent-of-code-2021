@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Text;
 
 namespace AdventOfCode2021
 {
     public static class Dec20
     {
-        public static void Solve(bool show = false)
+        public static void Solve(bool show = false, bool partTwo = false)
         {
             bool first = true;
             string algorithm = null;
@@ -26,44 +25,39 @@ namespace AdventOfCode2021
                 }
             }
 
-            // start out with a grid that is nine times as big as the input image.
-            var grid = new char[lines.Count * 3, lines[0].Length * 3];
+            var grid = new char[lines.Count, lines[0].Length];
             int rows = grid.GetLength(0);
             int cols = grid.GetLength(1);
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    if (i >= rows / 3 && i < (2 * rows)/3 &&
-                        j >= cols / 3 && j < (2 * cols)/3)
-                    {
-                        grid[i, j] = lines[i - (rows / 3)][j - (cols / 3)];
-                    }
-                    else
-                    {
-                        grid[i, j] = '.';
-                    }
+                    grid[i, j] = lines[i][j];
                 }
             }
-            char defaultVal = '.';
 
+            char defaultVal = '.';
             if (show)
             {
                 PrintGrid(grid);
             }
 
             int numLit = 0;
-            for (int steps = 0; steps < 2; steps++)
+
+            int numSteps = partTwo ? 50 : 2;
+            for (int steps = 0; steps < numSteps; steps++)
             {
                 numLit = 0;
-                var nextGrid = new char[rows, cols];
-                for (int i = 0; i < rows; i++)
+                int newRows = rows + 2;
+                int newCols = cols + 2;
+                var nextGrid = new char[newRows, newCols];
+                for (int i = -1; i < rows + 1; i++)
                 {
-                    for (int j = 0; j < cols; j++)
+                    for (int j = -1; j < cols + 1; j++)
                     {
                         int index = GetValue(grid, i, j, rows, cols, defaultVal);
-                        nextGrid[i, j] = algorithm[index];
-                        if (nextGrid[i, j] == '#')
+                        nextGrid[i + 1, j + 1] = algorithm[index];
+                        if (nextGrid[i + 1, j + 1] == '#')
                         {
                             numLit++;
                         }
@@ -74,6 +68,8 @@ namespace AdventOfCode2021
                 defaultVal = algorithm[defaultIndex];
 
                 grid = nextGrid;
+                rows += 2;
+                cols += 2;
 
                 if (show)
                 {
